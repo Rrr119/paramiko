@@ -2,6 +2,12 @@
 Changelog
 =========
 
+- :feature:`-` Added `Ed448Key <paramiko.ed448key.Ed448Key>` for the
+  ``ssh-ed448`` public key algorithm and its OpenSSH certificate variant,
+  ``ssh-ed448-cert-v01@openssh.com``, as specified in :rfc:`8709`. Ed448 keys
+  can be loaded from PKCS#8 PEM or OpenSSH private key files and are supported
+  by the existing `PKey <paramiko.pkey.PKey>` loading, signing, verification,
+  and certificate APIs.
 - :release:`5.1.0 <2026-10-17>`
 - :release:`5.0.1 <2026-10-17>`
 - :bug:`2462` (w/ earlier fix attempts :issue:`2475` and :issue:`2465`) An API

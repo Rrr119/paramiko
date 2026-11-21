@@ -32,6 +32,7 @@ from paramiko.agent import Agent
 from paramiko.common import DEBUG
 from paramiko.config import SSH_PORT
 from paramiko.ecdsakey import ECDSAKey
+from paramiko.ed448key import Ed448Key
 from paramiko.ed25519key import Ed25519Key
 from paramiko.hostkeys import HostKeys
 from paramiko.rsakey import RSAKey
@@ -687,7 +688,7 @@ class SSHClient(ClosingContextManager):
             for key_filename in key_filenames:
                 # TODO (backwards incompat): leverage PKey.from_path() if we
                 # don't end up just killing SSHClient entirely
-                for pkey_class in (RSAKey, ECDSAKey, Ed25519Key):
+                for pkey_class in (RSAKey, ECDSAKey, Ed25519Key, Ed448Key):
                     try:
                         key = self._key_from_filepath(
                             key_filename, pkey_class, passphrase
@@ -729,6 +730,7 @@ class SSHClient(ClosingContextManager):
                 (RSAKey, "rsa"),
                 (ECDSAKey, "ecdsa"),
                 (Ed25519Key, "ed25519"),
+                (Ed448Key, "ed448"),
             ]:
                 # ~/ssh/ is for windows
                 for directory in [".ssh", "ssh"]:

@@ -60,6 +60,7 @@ dev = [
   "invoke>=2.2.1",
   "invocations>=4.0.2",
   # Testing!
+  "asyncssh>=2.14",
   "pytest-relaxed>=2",
   # pytest-xdist for test dir watching and the inv guard task
   "pytest-xdist>=3",

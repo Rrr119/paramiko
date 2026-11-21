@@ -32,11 +32,13 @@ from pathlib import Path
 from typing import NamedTuple, Optional, Union
 
 import bcrypt
+from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import asymmetric, padding, serialization
 from cryptography.hazmat.primitives.asymmetric.ec import (
     EllipticCurvePrivateKey,
 )
+from cryptography.hazmat.primitives.asymmetric.ed448 import Ed448PrivateKey
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from cryptography.hazmat.primitives.asymmetric.rsa import RSAPrivateKey
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
@@ -100,7 +102,12 @@ class FileFormat(NamedTuple):
 # While these have no apparent interface/protocol within Cryptography, all can
 # be duck typed as eg "having .private_bytes", which we have always relied upon
 # implicitly since the switch to this library.
-PrivateKey = Union[RSAPrivateKey, EllipticCurvePrivateKey, Ed25519PrivateKey]
+PrivateKey = Union[
+    RSAPrivateKey,
+    EllipticCurvePrivateKey,
+    Ed25519PrivateKey,
+    Ed448PrivateKey,
+]
 
 # NOTE: considered making these part of an Enum but that was a bit
 # annoying/fussy, so this is an okay middle ground?
@@ -170,7 +177,7 @@ class PKey:
         """
 
         # Lazy import to avoid circular import issues
-        from paramiko import ECDSAKey, Ed25519Key, RSAKey
+        from paramiko import ECDSAKey, Ed448Key, Ed25519Key, RSAKey
 
         # Normalize to string, as cert suffix isn't quite an extension, so
         # pathlib isn't useful for this.
@@ -196,10 +203,22 @@ class PKey:
                 data=data, password=password
             )
         # Then fall back to assuming legacy PEM type
-        except ValueError:
-            loaded = serialization.load_pem_private_key(
-                data=data, password=password
-            )
+        except (ValueError, UnsupportedAlgorithm):
+            try:
+                loaded = serialization.load_pem_private_key(
+                    data=data, password=password
+                )
+            except ValueError:
+                # Cryptography doesn't support OpenSSH-format Ed448 keys, so
+                # hand these to our own parser before giving up.
+                if data.startswith(b"-----BEGIN OPENSSH PRIVATE KEY-----"):
+                    key = Ed448Key.from_private_key_file(
+                        str(key_path), password=password
+                    )
+                    if cert_path.exists():
+                        key.load_certificate(str(cert_path))
+                    return key
+                raise
         # TODO Python 3.10: match statement? (NOTE: we cannot use a dict
         # because the results from the loader are literal backend, eg openssl,
         # private classes, so isinstance tests work but exact 'x class is y'
@@ -213,6 +232,8 @@ class PKey:
             key_class = RSAKey
         elif isinstance(loaded, asymmetric.ed25519.Ed25519PrivateKey):
             key_class = Ed25519Key
+        elif isinstance(loaded, asymmetric.ed448.Ed448PrivateKey):
+            key_class = Ed448Key
         elif isinstance(loaded, asymmetric.ec.EllipticCurvePrivateKey):
             key_class = ECDSAKey
         else:

@@ -69,6 +69,7 @@ from paramiko.server import ServerInterface, SubsystemHandler, InteractiveQuery
 from paramiko.rsakey import RSAKey
 from paramiko.ecdsakey import ECDSAKey
 from paramiko.ed25519key import Ed25519Key
+from paramiko.ed448key import Ed448Key
 from paramiko.sftp import SFTPError, BaseSFTP
 from paramiko.sftp_client import SFTP, SFTPClient
 from paramiko.sftp_server import SFTPServer
@@ -112,7 +113,7 @@ from paramiko.common import io_sleep
 
 
 # TODO: I guess a real plugin system might be nice for future expansion...
-key_classes = [RSAKey, Ed25519Key, ECDSAKey]
+key_classes = [RSAKey, Ed25519Key, Ed448Key, ECDSAKey]
 
 
 __author__ = "Jeff Forcier <jeff@bitprophet.org>"

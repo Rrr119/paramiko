@@ -35,6 +35,7 @@ from cryptography.hazmat.primitives.asymmetric.rsa import RSAPrivateNumbers
 
 from paramiko import (
     ECDSAKey,
+    Ed448Key,
     Ed25519Key,
     Message,
     RSAKey,
@@ -531,6 +532,38 @@ class KeyTest(unittest.TestCase):
             key = Ed25519Key.from_private_key(pkey_fileobj)
         self.assertEqual(key, key)
         self.assertTrue(key.can_sign())
+
+    def test_ed448(self):
+        key = Ed448Key.from_private_key_file(_support("ed448.key"))
+        self.assertEqual("ssh-ed448", key.get_name())
+        self.assertEqual(448, key.get_bits())
+        self.assertTrue(key.can_sign())
+        msg = key.sign_ssh_data(b"ice weasels")
+        msg.rewind()
+        self.assertEqual("ssh-ed448", msg.get_text())
+        msg.rewind()
+        pub = Ed448Key(data=key.asbytes())
+        self.assertTrue(pub.verify_ssh_sig(b"ice weasels", msg))
+
+    def test_ed448_load_from_file_obj(self):
+        with open(_support("ed448.key")) as pkey_fileobj:
+            key = Ed448Key.from_private_key(pkey_fileobj)
+        self.assertTrue(key.can_sign())
+
+    def test_ed448_generate(self):
+        key = Ed448Key.generate()
+        msg = key.sign_ssh_data(b"jerri blank")
+        msg.rewind()
+        self.assertTrue(key.verify_ssh_sig(b"jerri blank", msg))
+
+    def test_ed448_write_private_key(self):
+        key = Ed448Key.from_private_key_file(_support("ed448.key"))
+        s = StringIO()
+        key.write_private_key(s)
+        assert "BEGIN PRIVATE KEY" in s.getvalue()
+        s.seek(0)
+        key2 = Ed448Key.from_private_key(s)
+        self.assertEqual(key, key2)
 
     def test_keyfile_is_actually_encrypted(self):
         # Read an existing encrypted private key

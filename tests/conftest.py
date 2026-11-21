@@ -12,6 +12,7 @@ from invoke.vendor.lexicon import Lexicon
 from paramiko import (
     SFTP,
     ECDSAKey,
+    Ed448Key,
     Ed25519Key,
     PKey,
     RSAKey,
@@ -139,6 +140,13 @@ key_data = [
         "ssh-ed25519",
         Ed25519Key,
         "SHA256:J6VESFdD3xSChn8y9PzWzeF+1tl892mOy2TqkMLO4ow",
+        None,
+    ],
+    [
+        "ed448",
+        "ssh-ed448",
+        Ed448Key,
+        "SHA256:GKHl7dSL30vHPzz1RTkCCV1ZfH2fsQkajry7PGoTWdY",
         None,
     ],
     [

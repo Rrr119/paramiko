@@ -50,6 +50,7 @@ FINGERPRINTS = {
     "ssh-rsa": b"\x60\x73\x38\x44\xcb\x51\x86\x65\x7f\xde\xda\xa2\x2b\x5a\x57\xd5",  # noqa
     "ecdsa-sha2-nistp256": b"\x25\x19\xeb\x55\xe6\xa1\x47\xff\x4f\x38\xd2\x75\x6f\xa5\xd5\x60",  # noqa
     "ssh-ed25519": b'\xb3\xd5"\xaa\xf9u^\xe8\xcd\x0e\xea\x02\xb9)\xa2\x80',
+    "ssh-ed448": b"\xd9V\x06&A\x95\xec\x05W\xbe\xe7\x97\xe2\x0c\xea\\",
 }
 
 
@@ -266,6 +267,9 @@ class SSHClientTest(ClientTest):
     def test_client_ed25519(self):
         self._test_connection(key_filename=_support("ed25519.key"))
 
+    def test_client_ed448(self):
+        self._test_connection(key_filename=_support("ed448.key"))
+
     def test_multiple_key_files(self):
         """
         verify that SSHClient accepts and tries multiple key files.
@@ -275,6 +279,7 @@ class SSHClientTest(ClientTest):
             # TODO: this is just about key identity so should be ok
             "rsa": "ssh-rsa",
             "ed25519": "ssh-ed25519",
+            "ed448": "ssh-ed448",
             "ecdsa": "ecdsa-sha2-nistp256",
         }
         # Various combos of attempted & valid keys
@@ -326,7 +331,7 @@ class SSHClientTest(ClientTest):
         # They're similar except for which path is given; the expected auth and
         # server-side behavior is 100% identical.)
         # NOTE: only bothered whipping up one cert per overall class/family.
-        for type_ in ("rsa", "ecdsa-256", "ed25519"):
+        for type_ in ("rsa", "ecdsa-256", "ed25519", "ed448"):
             key_path = _support(f"{type_}.key")
             self._test_connection(
                 key_filename=key_path,
@@ -340,7 +345,7 @@ class SSHClientTest(ClientTest):
         # about the server-side key object's public blob. Thus, we can prove
         # that a specific cert was found, along with regular authorization
         # succeeding proving that the overall flow works.
-        for type_ in ("rsa", "ecdsa-256", "ed25519"):
+        for type_ in ("rsa", "ecdsa-256", "ed25519", "ed448"):
             key_path = _support(f"{type_}.key")
             self._test_connection(
                 key_filename=key_path,

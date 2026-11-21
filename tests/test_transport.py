@@ -1225,7 +1225,7 @@ class TestExtInfo(unittest.TestCase):
             # data stored on Transport after hearing back from a compatible
             # server (such as ourselves in server mode)
             assert tc.server_extensions == {
-                "server-sig-algs": b"ssh-ed25519,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,rsa-sha2-512,rsa-sha2-256"  # noqa
+                "server-sig-algs": b"ssh-ed25519,ssh-ed448,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,rsa-sha2-512,rsa-sha2-256"  # noqa
             }
 
     def test_client_uses_server_sig_algs_for_pubkey_auth(self):

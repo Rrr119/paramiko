@@ -29,3 +29,8 @@ Ed25519
 =======
 
 .. automodule:: paramiko.ed25519key
+
+Ed448
+=====
+
+.. automodule:: paramiko.ed448key

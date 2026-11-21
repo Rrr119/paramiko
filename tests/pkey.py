@@ -2,15 +2,18 @@ from io import StringIO
 from pathlib import Path
 from unittest.mock import call, patch
 
+from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric.ec import (
     EllipticCurvePrivateKey,
 )
 from cryptography.hazmat.primitives.asymmetric.ed448 import Ed448PrivateKey
 from cryptography.hazmat.primitives.asymmetric.rsa import RSAPrivateKey
+from cryptography.hazmat.primitives.asymmetric.x25519 import X25519PrivateKey
 from pytest import mark, raises
 
 from paramiko import (
     ECDSAKey,
+    Ed448Key,
     Ed25519Key,
     Message,
     PKey,
@@ -69,14 +72,20 @@ class PKey_:
             # Both key and cert paths
             mPath.return_value.expanduser.assert_has_calls([call(), call()])
 
-        def raises_UnknownKeyType_for_unknown_types(self):
+        def raises_UnknownKeyType_for_unknown_types(self, tmp_path):
             # I.e. a real, becomes a useful object via cryptography.io, key
-            # class that we do NOT support. Chose Ed448 randomly as OpenSSH
-            # doesn't seem to support it either, going by ssh-keygen...
-            keypath = _support("ed448.key")
+            # class that we do NOT support.
+            keypath = tmp_path / "x25519.key"
+            keypath.write_bytes(
+                X25519PrivateKey.generate().private_bytes(
+                    serialization.Encoding.PEM,
+                    serialization.PrivateFormat.PKCS8,
+                    serialization.NoEncryption(),
+                )
+            )
             with raises(UnknownKeyType) as exc:
                 PKey.from_path(keypath)
-            assert issubclass(exc.value.key_type, Ed448PrivateKey)
+            assert issubclass(exc.value.key_type, X25519PrivateKey)
             with open(keypath, "rb") as fd:
                 assert exc.value.key_bytes == fd.read()
 
@@ -187,6 +196,8 @@ class PKey_:
             assert key.algorithm_name == "ECDSA"
         elif isinstance(key, Ed25519Key):
             assert key.algorithm_name == "ED25519"
+        elif isinstance(key, Ed448Key):
+            assert key.algorithm_name == "ED448"
         # TODO: corner case: AgentKey, whose .name can be cert-y (due to the
         # value of the name field passed via agent protocol) and thus
         # algorithm_name is eg "RSA-CERT" - keys loaded directly from disk will
@@ -231,6 +242,9 @@ class PKey_:
         def ed25519_is_protocol_name(self):
             assert Ed25519Key.identifiers() == ["ssh-ed25519"]
 
+        def ed448_is_protocol_name(self):
+            assert Ed448Key.identifiers() == ["ssh-ed448"]
+
         def ecdsa_is_all_curve_names(self):
             assert ECDSAKey.identifiers() == [
                 "ecdsa-sha2-nistp256",
@@ -244,6 +258,7 @@ class PKey_:
             [
                 ("rsa.key", RSAPrivateKey),
                 ("ecdsa-256.key", EllipticCurvePrivateKey),
+                ("ed448.key", Ed448PrivateKey),
                 # TODO: Ed25519 after we sort it out
             ],
         )

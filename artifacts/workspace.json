@@ -1,0 +1,17 @@
+{
+  "root": "/home/dev/feedback/uid30833",
+  "B": "/home/dev/feedback/uid30833",
+  "sha": "d43d95cb44f4aac90306fae2a9ad40f9d6505582",
+  "wslDistro": "Ubuntu-26.04",
+  "source": {
+    "owner": "paramiko",
+    "repo": "paramiko",
+    "sha": "d43d95cb44f4aac90306fae2a9ad40f9d6505582"
+  },
+  "fork": {
+    "owner": "Rrr119",
+    "repo": "paramiko",
+    "cloneUrl": "https://github.com/Rrr119/paramiko.git"
+  },
+  "at": "2026-11-21T04:36:47.946Z"
+}

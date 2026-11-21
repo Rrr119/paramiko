@@ -95,6 +95,7 @@ from paramiko.common import (
 )
 from paramiko.compress import ZlibCompressor, ZlibDecompressor
 from paramiko.ecdsakey import ECDSAKey
+from paramiko.ed448key import Ed448Key
 from paramiko.ed25519key import Ed25519Key
 from paramiko.kex_curve25519 import KexCurve25519
 from paramiko.kex_ecdh_nist import KexNistp256, KexNistp384, KexNistp521
@@ -197,6 +198,7 @@ class Transport(threading.Thread, ClosingContextManager):
     # ~= HostKeyAlgorithms in OpenSSH land
     _preferred_keys = (
         "ssh-ed25519",
+        "ssh-ed448",
         "ecdsa-sha2-nistp256",
         "ecdsa-sha2-nistp384",
         "ecdsa-sha2-nistp521",
@@ -206,6 +208,7 @@ class Transport(threading.Thread, ClosingContextManager):
     # ~= PubkeyAcceptedAlgorithms
     _preferred_pubkeys = (
         "ssh-ed25519",
+        "ssh-ed448",
         "ecdsa-sha2-nistp256",
         "ecdsa-sha2-nistp384",
         "ecdsa-sha2-nistp521",
@@ -321,6 +324,8 @@ class Transport(threading.Thread, ClosingContextManager):
         "ecdsa-sha2-nistp521-cert-v01@openssh.com": ECDSAKey,
         "ssh-ed25519": Ed25519Key,
         "ssh-ed25519-cert-v01@openssh.com": Ed25519Key,
+        "ssh-ed448": Ed448Key,
+        "ssh-ed448-cert-v01@openssh.com": Ed448Key,
     }
 
     _kex_info = {
